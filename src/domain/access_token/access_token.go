@@ -1,6 +1,10 @@
 package access_token
 
-import "time"
+import (
+	"github.com/agrism/bookstore_oauth-api/src/utils/errors"
+	"strings"
+	"time"
+)
 
 const (
 	expirationTime = 24
@@ -24,4 +28,23 @@ func GetNewAccessToken() AccessToken {
 
 func (at AccessToken) isExpired() bool {
 	return time.Unix(at.Expires, 0).Before(time.Now().UTC())
+}
+
+func (at AccessToken) Validate() *errors.RestErr {
+	at.AccessToken = strings.TrimSpace(at.AccessToken)
+
+	if at.AccessToken == "" {
+		return errors.NewBadRequestError("invalid access token id")
+	}
+	if at.UserId <= 0 {
+		return errors.NewBadRequestError("invalid user id")
+	}
+	if at.ClientId <= 0 {
+		return errors.NewBadRequestError("invalid client id")
+	}
+	if at.Expires <= 0 {
+		return errors.NewBadRequestError("invalid expiration time")
+	}
+
+	return nil
 }
